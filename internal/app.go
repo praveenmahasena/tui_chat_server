@@ -5,6 +5,6 @@ import (
 )
 
 func Start() error {
-	l := listener.New("tcp6", ":42069")
+	l := listener.New("tcp", ":42069")
 	return l.Listen()
 }
