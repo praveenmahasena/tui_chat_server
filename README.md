@@ -24,7 +24,7 @@ git@github.com:praveenmahasena/tui_chat_server.git
 bash
 cd tui_chat_server
 make server
-make run
+./bin/server
 ```
 
 By dialing `PORT=42069` you could connect to the server locally with telnet and start sending chat messages
