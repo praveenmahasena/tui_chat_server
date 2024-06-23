@@ -2,14 +2,9 @@ package listener
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net"
 )
-
-type Clients struct {
-	con []net.Conn
-}
 
 func Run() error {
 	li, liErr := net.Listen("tcp", ":42069")
@@ -17,18 +12,28 @@ func Run() error {
 		return liErr
 	}
 
+	clients := []net.Conn{}
+
 	for {
 		con, conErr := li.Accept()
-		clients := Clients{}
-		clients.con = append(clients.con, con)
 
 		if conErr != nil {
 			continue
 		}
-
+		clients = append(clients, con)
 		messageCh := make(chan string)
 		go read(con, messageCh)
-		go write(clients.con, messageCh)
+
+		go func() {
+
+			for m := range messageCh {
+				for _, c := range clients {
+					io.WriteString(c, m)
+				}
+			}
+
+		}()
+
 	}
 	//return nil
 }
@@ -37,17 +42,12 @@ func read(con net.Conn, ch chan<- string) {
 	s := bufio.NewScanner(con)
 
 	for s.Scan() {
-		fmt.Println(s.Text())
-		ch <- s.Text()
-	}
-}
-
-func write(con []net.Conn, ch <-chan string) {
-
-	for message := range ch {
-
-		for _, client := range con {
-			io.WriteString(client, message)
+		msg := s.Text()
+		if msg == "end" {
+			ch <- con.RemoteAddr().String() + "left"
+			con.Close()
+			continue
 		}
+		ch <- msg
 	}
 }
