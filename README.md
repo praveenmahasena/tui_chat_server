@@ -16,7 +16,7 @@ This is a simple chat server app written in [Golang](https://go.dev/dl/) which u
 
 ```
 bash
-git@github.com:praveenmahasena/tui_chat_server.git
+git clone git@github.com:praveenmahasena/tui_chat_server.git
 ```
 
 ### Start
