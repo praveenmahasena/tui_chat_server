@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"log"
+
+	"github.com/praveenmahasena/server/internal/listener"
+)
 
 func main() {
-	fmt.Println("vim-go")
+
+	if err := listener.Run(); err != nil {
+		log.Fatalln(err)
+	}
+
 }
