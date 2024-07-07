@@ -1,7 +1,7 @@
 package listener
 
 import (
-	"log"
+	"fmt"
 	"net"
 	"sync"
 )
@@ -19,7 +19,6 @@ func New(p string) *Listener {
 type Pub struct {
 	pubs   map[net.Conn]bool
 	msgQue chan string
-	mu     sync.Mutex
 }
 
 func (p *Pub) Add(con net.Conn) {
@@ -36,12 +35,10 @@ func (l *Listener) Run() error {
 	defer li.Close()
 
 	Pub := &Pub{
-		pubs:   map[net.Conn]bool{},
-		msgQue: make(chan string),
-		mu:     sync.Mutex{},
+		pubs: map[net.Conn]bool{},
 	}
 
-	//go Pub.handleWrite()
+	go Pub.handleWrite()
 
 	for {
 		con, conErr := li.Accept()
@@ -61,35 +58,33 @@ func handle(con net.Conn, p *Pub) {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go handleRead(con, p)
+	wg.Done()
 	wg.Wait()
 }
 
 func (p *Pub) AddQue(str string) {
-	p.mu.Lock()
-	p.msgQue <- str
-	p.mu.Unlock()
 }
 
 func handleRead(con net.Conn, p *Pub) {
 	var data = make([]byte, 1000)
 
 	for {
-		var str string
-		l, err := con.Read(data)
+		len, err := con.Read(data)
 		if err != nil {
-			log.Println(err)
+			continue
 		}
-		str = string(data[:l])
-
-		p.AddQue(str)
-
+		p.msgQue <- string(data[:len])
+		fmt.Println(string(data[:len]))
 	}
 }
 
 func (p *Pub) handleWrite() {
-	for msg := range p.msgQue {
-		for c, _ := range p.pubs {
-			c.Write([]byte(msg))
+	for {
+		select {
+		case msg := <-p.msgQue:
+			for c, _ := range p.pubs {
+				c.Write([]byte(msg))
+			}
 		}
 	}
 }
