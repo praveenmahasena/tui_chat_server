@@ -3,12 +3,12 @@ package main
 import (
 	"log"
 
-	"github.com/praveenmahasena/server/internal/listener"
+	"github.com/praveenmahasena/server/internal"
 )
 
 func main() {
 
-	if err := listener.Run(); err != nil {
+	if err := internal.Start(); err != nil {
 		log.Fatalln(err)
 	}
 
