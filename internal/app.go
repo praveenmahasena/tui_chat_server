@@ -15,7 +15,7 @@ func Start() error {
 	go func() {
 		cancelCh := make(chan os.Signal, 1)
 
-		signal.Notify(cancelCh, os.Interrupt, syscall.SIGKILL, syscall.SIGINT) // the same thing
+		signal.Notify(cancelCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT) // the same thing
 
 		select {
 		case sig := <-cancelCh:
