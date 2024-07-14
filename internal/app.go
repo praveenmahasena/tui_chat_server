@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/praveenmahasena/server/internal/listner"
+	"github.com/praveenmahasena/server/internal/listener"
 )
 
 func Start() error {
@@ -26,6 +26,6 @@ func Start() error {
 		}
 	}()
 
-	l := listner.New(ctx, "tcp", ":42069")
+	l := listener.New(ctx, "tcp", ":42069")
 	return l.Run()
 }

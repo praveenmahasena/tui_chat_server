@@ -1,4 +1,4 @@
-package listner
+package listener
 
 import (
 	"bufio"
@@ -10,21 +10,21 @@ import (
 	"github.com/praveenmahasena/server/internal/pubsub"
 )
 
-type Listner struct {
+type Listener struct {
 	Port    string
 	NetWork string
 	Ctx     context.Context
 }
 
-func New(c context.Context, n, p string) *Listner {
-	return &Listner{
+func New(c context.Context, n, p string) *Listener {
+	return &Listener{
 		Port:    p,
 		NetWork: n,
 		Ctx:     c,
 	}
 }
 
-func (l *Listner) Run() error {
+func (l *Listener) Run() error {
 	lConfig := net.ListenConfig{}
 	li, liErr := lConfig.Listen(l.Ctx, l.NetWork, l.Port)
 
