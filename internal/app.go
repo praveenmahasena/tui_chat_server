@@ -7,27 +7,25 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/praveenmahasena/server/internal/listener"
+	"github.com/praveenmahasena/server/internal/listner"
 )
 
 func Start() error {
-
-	ctx, done := context.WithCancel(context.Background())
-
+	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		signalChannel := make(chan os.Signal, 1)
-		signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+		cancelCh := make(chan os.Signal, 1)
+
+		signal.Notify(cancelCh, os.Interrupt, syscall.SIGKILL, syscall.SIGINT) // the same thing
 
 		select {
-		case sig := <-signalChannel:
+		case sig := <-cancelCh:
 			fmt.Printf("Received signal: %s\n", sig)
-			done()
+			cancel()
 		case <-ctx.Done():
 			fmt.Printf("closing signal goroutine\n")
 		}
 	}()
 
-	l := listener.New(":42069")
-	return l.Run(ctx)
-
+	l := listner.New(ctx, "tcp", ":42069")
+	return l.Run()
 }
