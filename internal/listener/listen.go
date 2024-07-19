@@ -10,23 +10,26 @@ import (
 	"github.com/praveenmahasena/server/internal/pubsub"
 )
 
+type Port string
+type NetWork string
+
 type Listener struct {
-	Port    string
-	NetWork string
-	Ctx     context.Context
+	port    Port
+	netWork NetWork
+	ctx     context.Context
 }
 
-func New(c context.Context, n, p string) *Listener {
+func New(c context.Context, n NetWork, p Port) *Listener {
 	return &Listener{
-		Port:    p,
-		NetWork: n,
-		Ctx:     c,
+		p,
+		n,
+		c,
 	}
 }
 
 func (l *Listener) Run() error {
 	lConfig := net.ListenConfig{}
-	li, liErr := lConfig.Listen(l.Ctx, l.NetWork, l.Port)
+	li, liErr := lConfig.Listen(l.ctx, string(l.netWork), string(l.port))
 
 	if liErr != nil {
 		return liErr
