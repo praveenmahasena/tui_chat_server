@@ -5,29 +5,47 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/praveenmahasena/server/internal/listener"
 )
 
 func Start() error {
+	ctx, cancel := context.WithCancel(context.Background())
 
-	ctx, done := context.WithCancel(context.Background())
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
 
-	go func() {
-		signalChannel := make(chan os.Signal, 1)
-		signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+	defer cancel()
 
-		select {
-		case sig := <-signalChannel:
-			fmt.Printf("Received signal: %s\n", sig)
-			done()
-		case <-ctx.Done():
-			fmt.Printf("closing signal goroutine\n")
-		}
-	}()
+	go func(c context.CancelFunc) {
+		defer c()
+		cancelCh := make(chan os.Signal, 1)
 
-	l := listener.New(":42069")
-	return l.Run(ctx)
+		signal.Notify(cancelCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT) // the same thing
 
+		sig := <-cancelCh
+		fmt.Printf("Received signal: %s\n", sig)
+	}(cancel)
+
+	wg.Add(1)
+	go bar(ctx, wg)
+
+	if err := foo(); err != nil {
+		return err
+	}
+
+	l := listener.New(ctx, "tcp", ":42069")
+	return l.Run()
+}
+
+func bar(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+	<-ctx.Done()
+	fmt.Printf("WTF\n")
+}
+
+func foo() error {
+	return nil
 }

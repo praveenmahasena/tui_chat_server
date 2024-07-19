@@ -7,9 +7,7 @@ import (
 )
 
 func main() {
-
 	if err := internal.Start(); err != nil {
 		log.Fatalln(err)
 	}
-
 }
